@@ -23,15 +23,17 @@ jobs:
         shell: bash
         run: |
           npm install ffmpeg-static --no-save
-          mkdir -p resources/ffmpeg
           if [ "$RUNNER_OS" = "Windows" ]; then
+            mkdir -p resources/ffmpeg
             cp node_modules/ffmpeg-static/ffmpeg.exe resources/ffmpeg/ffmpeg.exe
           elif [ "$RUNNER_OS" = "macOS" ]; then
-            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-mac
-            chmod +x resources/ffmpeg-mac
+            mkdir -p resources/ffmpeg-mac
+            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-mac/ffmpeg
+            chmod +x resources/ffmpeg-mac/ffmpeg
           else
-            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-linux
-            chmod +x resources/ffmpeg-linux
+            mkdir -p resources/ffmpeg-linux
+            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-linux/ffmpeg
+            chmod +x resources/ffmpeg-linux/ffmpeg
           fi
       - run: npx electron-builder --publish never
       - uses: actions/upload-artifact@v4
