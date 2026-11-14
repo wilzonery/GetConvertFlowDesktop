@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ConvertFlow – Your license</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:#09090b; color:#fff; font:16px system-ui,sans-serif; }
+  .card { width:min(520px,92vw); padding:32px; border:1px solid #3f3f46; border-radius:20px; background:#18181b; }
+  h1 { margin:0 0 12px; font-size:24px; }
+  p { color:#a1a1aa; line-height:1.5; }
+  .key { display:block; margin:16px 0; padding:14px; border-radius:10px; background:#27272a; color:#facc15; font:600 16px ui-monospace,monospace; word-break:break-all; user-select:all; }
+  button { width:100%; padding:12px; border:0; border-radius:12px; background:#eab308; color:#000; font-weight:700; font-size:15px; cursor:pointer; }
+  button:hover { background:#facc15; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<main class="card">
+  <img src="logo.png" width="64" height="64" alt="ConvertFlow" style="display:block;margin:0 0 16px;border-radius:32px">
+  <h1 id="title">Confirming your payment…</h1>
+  <p id="message">This only takes a few seconds.</p>
+  <code id="key" class="key hidden"></code>
+  <button id="copy" class="hidden">Copy license key</button>
+  <p id="hint" class="hidden">Open ConvertFlow, paste this key into the activation screen, and click Activate. You can use it on up to 3 installations.<br><br><strong>Keep your key in a safe place.</strong> If you lose it, email us at <a href="mailto:support@convertflow.cc" style="color:#facc15">support@convertflow.cc</a> and we’ll send it again.</p>
+</main>
+<script>
+  // Public address of your Supabase project (safe to publish).
+  var FUNCTIONS_URL = 'https://txnvqcckskktukilsbsx.supabase.co/functions/v1';
+
+  var params = new URLSearchParams(location.search);
+  var sessionId = params.get('session_id');
+  var el = function (id) { return document.getElementById(id); };
+
+  function show(title, message) { el('title').textContent = title; el('message').textContent = message; }
+
+  if (params.has('cancelled')) {
+    show('Checkout cancelled', 'No payment was made. You can close this page and try again from ConvertFlow.');
+  } else if (!sessionId || sessionId.indexOf('cs_') !== 0) {
+    show('Missing checkout session', 'Return to ConvertFlow and start checkout again.');
+  } else {
+    var attempts = 0;
+    var poll = function () {
+      attempts += 1;
+      fetch(FUNCTIONS_URL + '/get-license', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionId })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (res.ok && res.data.licenseKey) {
+            show('Thank you! Your license is ready', 'Your payment was successful.');
+            el('key').textContent = res.data.licenseKey;
+            ['key', 'copy', 'hint'].forEach(function (id) { el(id).classList.remove('hidden'); });
+          } else if (res.ok && res.data.pending && attempts < 20) {
+            setTimeout(poll, 2000);
+          } else if (res.ok && res.data.pending) {
+            show('Still confirming…', 'Your payment went through, but confirmation is taking longer than usual. Refresh this page in a minute.');
+          } else {
+            show('Could not retrieve your license', (res.data && res.data.error) || 'Please refresh, or contact support with your Stripe receipt.');
+          }
+        })
+        .catch(function () {
+          if (attempts < 5) setTimeout(poll, 2000);
+          else show('Could not retrieve your license', 'Check your connection and refresh this page.');
+        });
+    };
+    poll();
+  }
+
+  el('copy').addEventListener('click', function () {
+    navigator.clipboard.writeText(el('key').textContent).then(function () {
+      el('copy').textContent = 'Copied!';
+      setTimeout(function () { el('copy').textContent = 'Copy license key'; }, 2000);
+    });
+  });
+</script>
+</body>
+</html>

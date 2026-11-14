@@ -1,0 +1,159 @@
+{
+  "name": "convertflow-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ConvertFlow Desktop — Advanced media converter with AI tools",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "dev:electron": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "tsc -b && vite build",
+    "build:electron": "tsc -b && vite build && electron-builder",
+    "build:win": "tsc -b && vite build && electron-builder --win",
+    "build:mac": "tsc -b && vite build && electron-builder --mac",
+    "build:linux": "tsc -b && vite build && electron-builder --linux",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "node --test electron/ffmpeg-runner.test.cjs",
+    "release:win": "tsc -b && vite build && electron-builder --win --publish always",
+    "build:store": "tsc -b && vite build && electron-builder --win appx"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "lucide-react": "^0.344.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.18",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "globals": "^15.9.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.3.0",
+    "vite": "^5.4.2",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.convertflow.desktop",
+    "productName": "ConvertFlow Desktop",
+    "icon": "public/logo.png",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/**/*",
+      "!electron/**/*.test.cjs",
+      "!**/*.map"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/logo.png",
+      "artifactName": "ConvertFlow-Setup-${version}.${ext}",
+      "extraResources": [
+        {
+          "from": "resources/ffmpeg",
+          "to": "ffmpeg",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "public/logo.png",
+      "category": "public.app-category.utilities",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "ConvertFlow-mac-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "resources/ffmpeg-mac",
+          "to": "ffmpeg",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/logo.png",
+      "category": "Utility",
+      "artifactName": "ConvertFlow-linux-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "resources/ffmpeg-linux",
+          "to": "ffmpeg",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "ConvertFlow"
+    },
+    "copyright": "Copyright © 2026 ConvertFlow",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "YOUR_GITHUB_USERNAME",
+        "repo": "convertflow-releases",
+        "releaseType": "release"
+      }
+    ],
+    "appx": {
+      "identityName": "Vimpi.ConvertFlow",
+      "publisher": "CN=F8304F3C-5EB8-4512-A9CD-E291F3B6384E",
+      "publisherDisplayName": "Vimpi",
+      "applicationId": "ConvertFlow",
+      "displayName": "ConvertFlow"
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  },
+  "author": "ConvertFlow",
+  "license": "UNLICENSED"
+}
