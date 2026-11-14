@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -19,6 +20,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx electron-builder --publish never
+      - name: Show where installers ended up
+        if: always()
+        shell: bash
+        run: find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" \) -not -path "./node_modules/*"
       - uses: actions/upload-artifact@v4
         with:
           name: convertflow-${{ matrix.os }}
@@ -26,9 +31,3 @@ jobs:
           path: |
             release/*.exe
             release/*.dmg
-            release/*.AppImage
-            release/*.deb
-            dist/*.exe
-            dist/*.dmg
-            dist/*.AppImage
-            dist/*.deb
