@@ -20,14 +20,12 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx electron-builder --publish never
-      - name: Show where installers ended up
-        if: always()
-        shell: bash
-        run: find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" \) -not -path "./node_modules/*"
       - uses: actions/upload-artifact@v4
         with:
           name: convertflow-${{ matrix.os }}
           if-no-files-found: error
           path: |
-            release/*.exe
-            release/*.dmg
+            dist-electron/*.exe
+            dist-electron/*.dmg
+            dist-electron/*.AppImage
+            dist-electron/*.deb
