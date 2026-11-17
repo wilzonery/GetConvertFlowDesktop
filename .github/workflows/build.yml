@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -18,12 +19,29 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run build
+      - name: Get ffmpeg for this system
+        shell: bash
+        run: |
+          npm install ffmpeg-static --no-save
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            mkdir -p resources/ffmpeg
+            cp node_modules/ffmpeg-static/ffmpeg.exe resources/ffmpeg/ffmpeg.exe
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            mkdir -p resources/ffmpeg-mac
+            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-mac/ffmpeg
+            chmod +x resources/ffmpeg-mac/ffmpeg
+          else
+            mkdir -p resources/ffmpeg-linux
+            cp node_modules/ffmpeg-static/ffmpeg resources/ffmpeg-linux/ffmpeg
+            chmod +x resources/ffmpeg-linux/ffmpeg
+          fi
       - run: npx electron-builder --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: convertflow-${{ matrix.os }}
+          if-no-files-found: error
           path: |
-            dist/*.exe
-            dist/*.dmg
-            dist/*.AppImage
-            dist/*.deb
+            dist-electron/*.exe
+            dist-electron/*.dmg
+            dist-electron/*.AppImage
+            dist-electron/*.deb
