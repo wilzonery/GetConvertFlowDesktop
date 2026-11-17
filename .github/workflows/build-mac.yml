@@ -6,17 +6,32 @@ on:
 jobs:
   build-mac:
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
       - run: npm ci
-      - run: npm run build:mac
+
+      - name: Check ffmpeg is present
+        run: |
+          ls -la resources/ || true
+          test -f resources/ffmpeg-mac && chmod +x resources/ffmpeg-mac
+
+      - name: Build
+        run: npm run build:mac -- --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
       - uses: actions/upload-artifact@v4
         with:
           name: ConvertFlow-mac
           path: dist-electron/*.dmg
+          if-no-files-found: error
