@@ -1,7 +1,7 @@
 {
   "name": "convertflow-desktop",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ConvertFlow Desktop — Advanced media converter with AI tools",
   "main": "electron/main.cjs",
   "type": "module",

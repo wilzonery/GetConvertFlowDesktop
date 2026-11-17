@@ -44,10 +44,17 @@ function getInstallId(): string {
   return id;
 }
 
-const CHECKOUT_URL = 'https://buy.stripe.com/4gM00jaS23rW27B5C528805';
-
+/**
+ * Asks the create-checkout Edge Function for a fresh Stripe Checkout session.
+ * The server decides the price (STRIPE_PRICE_ID) and applies the launch promo code,
+ * so the app never needs a hard-coded payment link again.
+ */
 export async function startCheckout(): Promise<string> {
-  return CHECKOUT_URL;
+  const result = await invokeEdgeFunction<{ url?: string; error?: string }>('create-checkout', {});
+  if (!result.url) throw new Error(result.error || 'Could not start secure checkout.');
+  const host = new URL(result.url).hostname;
+  if (host !== 'stripe.com' && !host.endsWith('.stripe.com')) throw new Error('Unexpected checkout address.');
+  return result.url;
 }
 
 export async function activateLicense(input: string): Promise<ActivationResult> {
